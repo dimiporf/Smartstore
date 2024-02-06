@@ -1,0 +1,17 @@
+﻿@model ProfileConfigurationModel
+
+@{
+    Layout = null;
+}
+
+<div class="adminContent">
+    <div class="adminRow">
+        <div class="adminTitle">
+            <smart-label asp-for="NumberOfExportedRows" />
+        </div>
+        <div class="adminData">
+            <input asp-for="NumberOfExportedRows" />
+            <span asp-validation-for="NumberOfExportedRows"></span>
+        </div>
+    </div>
+</div>

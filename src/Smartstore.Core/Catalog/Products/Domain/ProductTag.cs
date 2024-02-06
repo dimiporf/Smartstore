@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Smartstore.Core.Localization;
@@ -38,5 +39,6 @@ namespace Smartstore.Core.Catalog.Products
             get => _products ?? LazyLoader.Load(this, ref _products) ?? (_products ??= new HashSet<Product>());
             protected set => _products = value;
         }
+                
     }
 }

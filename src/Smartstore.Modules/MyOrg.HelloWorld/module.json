@@ -1,0 +1,13 @@
+{
+  "$schema": "../module.schema.json",
+  "Author": "My Org",
+  "Group": "Admin",
+  "SystemName": "MyOrg.HelloWorld",
+  "FriendlyName": "Hello World",
+  "Description": "This module says Hello World",
+  "Version": "5.1",
+  "MinAppVersion": "5.1",
+  "Order": 1,
+  "ResourceRootKey": "Plugins.MyOrg.HelloWorld",
+  "ProjectUrl": "https://myorg.com"
+}

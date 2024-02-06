@@ -1,0 +1,49 @@
+﻿@model Product  
+    @{
+    Layout = "_AdminLayout";
+    }
+    
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AutoComplete Example</title>
+</head>
+<body>
+    <!-- Textbox for user input -->
+    <input type="text" id="autoCompleteTextBox" />
+
+    <!-- Container for autocomplete suggestions -->
+    <div id="autoCompleteSuggestions"></div>
+
+    <script>
+        $(document).ready(function () {
+            // Attach input event listener to the textbox
+            $('#autoCompleteTextBox').on('input', function () {
+                var userInput = $(this).val();
+
+                // Send the user input to the server for autocomplete suggestions
+                $.getJSON('/api/autoComplete', { input: userInput })
+                    .done(function (data) {
+                        // Update UI with autocomplete suggestions
+                        updateAutocompleteSuggestions(data);
+                    })
+                    .fail(function (jqXHR, textStatus, errorThrown) {
+                        console.error('Error fetching autocomplete suggestions:', textStatus, errorThrown);
+                    });
+            });
+
+            // Function to update autocomplete suggestions in the UI
+            function updateAutocompleteSuggestions(suggestions) {
+                // Clear previous suggestions
+                $('#autoCompleteSuggestions').empty();
+
+                // Add new suggestions to the dropdown list
+                suggestions.forEach(function (suggestion) {
+                    $('#autoCompleteSuggestions').append('<div>' + suggestion + '</div>');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

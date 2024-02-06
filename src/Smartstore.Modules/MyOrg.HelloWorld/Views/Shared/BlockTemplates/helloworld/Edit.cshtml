@@ -1,0 +1,13 @@
+﻿@model HelloWorldBlock
+
+<div class="adminContent">
+    <div class="adminRow">
+        <div class="adminTitle">
+            <smart-label asp-for="Name" />
+        </div>
+        <div class="adminData">
+            <input asp-for="Name" />
+            <span asp-validation-for="Name"></span>
+        </div>
+    </div>
+</div>

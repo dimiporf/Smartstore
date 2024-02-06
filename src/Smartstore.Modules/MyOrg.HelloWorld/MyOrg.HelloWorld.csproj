@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+
+      <Product>A Hello World module for Smartstore</Product>
+      <OutputPath>..\..\Smartstore.Web\Modules\MyOrg.HelloWorld</OutputPath>
+      <OutDir>$(OutputPath)</OutDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Views\HelloWorldAdmin\AdminEditTab.cshtml" />
+    <None Remove="Views\NotificationAdmin\List.cshtml" />
+    <None Remove="Views\NotificationAdmin\_Grid.Notification.cshtml" />
+    <None Remove="Views\NotificationAdmin\_Grid.Notification.Search.cshtml" />
+    <None Remove="Views\Shared\BlockTemplates\helloworld\Edit.cshtml" />
+    <None Remove="Views\Shared\BlockTemplates\helloworld\Preview.cshtml" />
+    <None Remove="Views\Shared\BlockTemplates\helloworld\Public.cshtml" />
+    <None Remove="Views\Shared\Components\HelloWorldConfiguration\Default.cshtml" />
+    <None Remove="Views\Shared\Components\HelloWorld\Default.cshtml" />
+    <None Remove="Views\Shared\Components\Notification\Default.cshtml" />
+    <None Remove="Views\TrainingAdmin\Index.cshtml" />
+  </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Smartstore.Web\Smartstore.Web.csproj">
+            <Private>False</Private>
+            <CopyLocal>False</CopyLocal>
+            <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
+        </ProjectReference>
+    </ItemGroup>
+
+</Project>
