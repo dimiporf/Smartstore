@@ -1,0 +1,13 @@
+{
+  "$schema": "../module.schema.json",
+  "Author": "Dimitris",
+  "Group": "Admin",
+  "SystemName": "Dimitris.ProductImport",
+  "FriendlyName": "Import Product",
+  "Description": "This module imports products",
+  "Version": "5.1",
+  "MinAppVersion": "5.1",
+  "Order": 1,
+  "ResourceRootKey": "Plugins.Dimitris.ProductImport",
+  "ProjectUrl": "https://myorg.com"
+}

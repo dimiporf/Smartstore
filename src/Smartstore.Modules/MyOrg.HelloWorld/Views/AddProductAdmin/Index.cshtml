@@ -1,0 +1,54 @@
+﻿@model List<MyOrg.HelloWorld.Models.AddProductModel>
+
+@{
+    Layout = "_AdminLayout";
+}
+
+<h1>Import XML</h1>
+
+<form method="post" enctype="multipart/form-data" asp-action="ImportXml">
+    <div class="form-group">
+        <label for="xmlFile">Select XML file:</label>
+        <input type="file" id="xmlFile" name="xmlFile" class="form-control-file">
+    </div>
+    <button type="submit" class="btn btn-primary">Import</button>
+</form>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger mt-3" role="alert">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success mt-3" role="alert">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (Model != null && Model.Any())
+{
+    <div class="row">
+        @foreach (var product in Model)
+        {
+            <div class="col-md-4">
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">@product.Name</h5>
+                        <p class="card-text">@product.Description</p>
+                        <p class="card-text">Price: $@product.Price</p>
+                        <p class="card-text">Stock: @product.Stock</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info" role="alert">
+        No products imported.
+    </div>
+}

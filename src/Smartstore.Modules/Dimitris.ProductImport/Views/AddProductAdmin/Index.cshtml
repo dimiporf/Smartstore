@@ -1,0 +1,99 @@
+﻿@model List<Dimitris.ProductImport.Models.AddProductModel>
+
+@{
+    Layout = "_AdminLayout";
+}
+
+<h1>Import Product Document</h1>
+
+<form asp-action="ImportData" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="file">Select File:</label>
+        <input type="file" class="form-control-file" id="file" name="file">
+    </div>
+    <button type="submit" class="btn btn-primary">Import</button>
+</form>
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger mt-3" role="alert">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success mt-3" role="alert">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (Model != null && Model.Any())
+{
+    <div class="row">
+        @foreach (var product in Model)
+        {
+            <div class="col-md-4">
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">@product.Name</h5>
+                        <p class="card-text">@product.Description</p>
+                        <p class="card-text">@product.ProductID</p>
+                        <p class="card-text">Price: $@product.Price</p>
+
+                        @if (product.Stock.HasValue)
+                        {
+                            <p class="card-text">Stock: @product.Stock</p>
+                        }
+                        @if (product.CategoryId != null)
+                        {
+                            <div class="category">
+                                <p>Category: @product.CategoryId</p>
+                            </div>
+                        }
+                        @if (product.HasDownload == true)
+                        {
+                            <p class="card-text">Download Status: <span class="badge badge-success">Available</span></p>
+                        }
+                        @if (product.PublishedOn.Year > 1000)
+                        {
+                            <p class="card-text">Published on: @product.PublishedOn</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info" role="alert">
+        No products imported.
+    </div>
+}
+<form id="getProductForm" asp-controller="AddProductAdmin" asp-action="GetProduct" method="get">
+    <input type="hidden" name="productId" value="1" /> <!-- Change the productId as needed -->
+    <button type="submit" class="btn btn-primary">Get Product</button>
+</form>
+
+<script>
+    // Add click event listener to the button
+    document.getElementById("getProductButton").addEventListener("click", function () {
+        // Make an AJAX request to the GetProduct action method
+        fetch("/AddProductAdmin/GetProduct?productId=1") // Change the productId as needed
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Failed to fetch product.");
+                }
+                return response.json();
+            })
+            .then(product => {
+                // Display the product details in the console (for debugging)
+                console.log(product);
+                // You can further process the product details here
+            })
+            .catch(error => {
+                // Handle any errors that occur during the fetch request
+                console.error("Error fetching product:", error);
+            });
+    });
+</script>

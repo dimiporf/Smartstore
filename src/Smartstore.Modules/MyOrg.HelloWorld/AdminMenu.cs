@@ -23,7 +23,7 @@ namespace MyOrg.HelloWorld
                 .AsItem();
             var subMenuItem = new MenuItem().ToBuilder()
                 .ResKey("Plugins.MyOrg.HelloWorld.MySubMenuItem")
-                .Action("Configure", "HelloWorldAdmin", new { area = "Admin" })
+                .Action("Index", "AddProductAdmin", new { area = "Admin" })
                 .AsItem();
 
             var secondMenuNode = new TreeNode<MenuItem>(secondMenuItem);
