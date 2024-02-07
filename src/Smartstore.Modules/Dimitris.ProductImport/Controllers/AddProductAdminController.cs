@@ -29,6 +29,7 @@ namespace Dimitris.ProductImport.Controllers
         [HttpGet]
         public IActionResult Index()
         {
+
             return View();
         }
 
@@ -141,59 +142,51 @@ namespace Dimitris.ProductImport.Controllers
         {
             var addProducts = new List<AddProductModel>();
 
-            using (var reader = new StreamReader(stream))
+            using (var csv = new CachedCsvReader(new StreamReader(stream), true))
             {
-                string line;
-                // Read the first line to determine the format
-                var headers = reader.ReadLine().Split(',');
+                var headers = csv.GetFieldHeaders();
 
-                while ((line = reader.ReadLine()) != null)
+                while (csv.ReadNextRecord())
                 {
-                    // Split the line into individual values
-                    var parts = line.Split(',');
-
-                    // Check the number of columns to determine the format
-                    if (parts.Length == headers.Length)
+                    var product = new AddProductModel();
+                    for (int i = 0; i < headers.Length; i++)
                     {
-                        var product = new AddProductModel();
-                        for (int i = 0; i < headers.Length; i++)
+                        switch (headers[i])
                         {
-                            switch (headers[i])
-                            {
-                                case "ProductID":
-                                case "Product ID":
-                                    product.ProductID = parts[i];
-                                    break;
-                                case "Name":
-                                case "ProductName":
-                                    product.Name = parts[i];
-                                    break;
-                                case "Price":
-                                    product.Price = ParsePriceCSV(parts[i]);
-                                    break;
-                                case "Stock":
-                                    product.Stock = int.Parse(parts[i]);
-                                    break;
-                                case "Description":
-                                    product.Description = parts[i];
-                                    break;
-                                case "CategoryId":
-                                case "Category":
-                                    product.CategoryId = parts[i];
-                                    break;
-                                case "hasDownload":
-                                    bool.TryParse(parts[i], out bool hasDownload);
-                                    product.HasDownload = hasDownload;
-                                    break;
-                                case "PublishedOn":
-                                    DateOnly.TryParse(parts[i], out DateOnly publishedOn);
-                                    product.PublishedOn = publishedOn;
-                                    break;
-                                    // Add additional cases for other columns if needed
-                            }
+                            case "ProductID":
+                            case "Product ID":
+                            case "SKU":
+                                product.ProductID = csv[i];
+                                break;
+                            case "Name":
+                            case "ProductName":
+                                product.Name = csv[i];
+                                break;
+                            case "Price":
+                                product.Price = ParsePriceCSV(csv[i]);
+                                break;
+                            case "Stock":
+                                product.Stock = int.Parse(csv[i]);
+                                break;
+                            case "Description":
+                                product.Description = csv[i];
+                                break;
+                            case "CategoryId":
+                            case "Category":
+                                product.CategoryId = csv[i];
+                                break;
+                            case "hasDownload":
+                                bool.TryParse(csv[i], out bool hasDownload);
+                                product.HasDownload = hasDownload;
+                                break;
+                            case "PublishedOn":
+                                DateOnly.TryParse(csv[i], out DateOnly publishedOn);
+                                product.PublishedOn = publishedOn;
+                                break;
+                                // Add additional cases for other columns if needed
                         }
-                        addProducts.Add(product);
                     }
+                    addProducts.Add(product);
                 }
             }
 
