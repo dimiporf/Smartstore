@@ -266,7 +266,8 @@ namespace Dimitris.ProductImport.Controllers
                     Price = product.Price,
                     StockQuantity = product.StockQuantity,
                     Published = true,
-                    TaxCategoryId = random.Next(1,6)
+                    TaxCategoryId = random.Next(1, 6),
+                    ProductTypeId = 5
                     
                     // Add other properties as needed
                 };
