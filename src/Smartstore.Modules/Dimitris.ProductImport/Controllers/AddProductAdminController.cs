@@ -16,6 +16,7 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Smartstore.Core.Catalog.Categories;
 using static Smartstore.Core.Security.Permissions.Catalog;
+using Org.BouncyCastle.Crypto.Signers;
 
 namespace Dimitris.ProductImport.Controllers
 {
@@ -253,6 +254,8 @@ namespace Dimitris.ProductImport.Controllers
         // Add the rest of the products to the database
         private async void AddNewProductsToDatabase(List<AddProductModel> newProducts)
         {
+            Random random = new Random();
+
             foreach (var product in newProducts)
             {
                 var newProductEntity = new Smartstore.Core.Catalog.Products.Product
@@ -263,7 +266,7 @@ namespace Dimitris.ProductImport.Controllers
                     Price = product.Price,
                     StockQuantity = product.StockQuantity,
                     Published = true,
-                    TaxCategoryId = 1,
+                    TaxCategoryId = random.Next(1,6)
                     
                     // Add other properties as needed
                 };
