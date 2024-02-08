@@ -13,24 +13,39 @@ using Smartstore.Web.Controllers;
 using LumenWorks.Framework.IO.Csv;
 using Smartstore.Core.DataExchange.Csv;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
+using Smartstore.Core.Catalog.Categories;
+using static Smartstore.Core.Security.Permissions.Catalog;
 
 namespace Dimitris.ProductImport.Controllers
 {
     public class AddProductAdminController : AdminController
     {
         private readonly SmartDbContext _smartDbContext;
+        private List<AddProductModel> _newProducts;
+
+        
 
         public AddProductAdminController(SmartDbContext smartDbContext)
         {
             _smartDbContext = smartDbContext;
+            _newProducts = new List<AddProductModel>();
         }
 
         // GET: Display the index view
         [HttpGet]
-        public IActionResult Index()
+        public IActionResult Index(string newProducts)
         {
+            if (!string.IsNullOrEmpty(newProducts))
+            {
+                _newProducts = JsonConvert.DeserializeObject<List<AddProductModel>>(newProducts);
+            }
+            else
+            {
+                _newProducts = new List<AddProductModel>();
+            }
 
-            return View();
+            return View(_newProducts);
         }
 
         // POST: Import product data from a file
@@ -62,6 +77,23 @@ namespace Dimitris.ProductImport.Controllers
                             addProducts = ParseCsv(stream);
                         }
                     }
+
+                    // Check for existing SKUs in the database
+                    var existingSkus = _smartDbContext.Products.Select(p => p.Sku).ToList();
+
+                    // Filter out products with existing SKUs
+                    _newProducts = addProducts.Where(p => !existingSkus.Contains(p.Sku)).ToList();
+
+                    TempData["SuccessMessage"] = "Data imported successfully.";
+
+                    // Add new products to the database
+                    AddNewProductsToDatabase(_newProducts);
+
+                    TempData["SuccessMessage"] = "Data imported successfully and new products added to the database.";
+
+                    // Pass _newProducts as a query parameter
+                    return RedirectToAction("Index", new { newProducts = JsonConvert.SerializeObject(_newProducts) });
+
                 }
                 else
                 {
@@ -73,8 +105,7 @@ namespace Dimitris.ProductImport.Controllers
                 TempData["ErrorMessage"] = "An error occurred while importing data: " + ex.Message;
             }
 
-            TempData["SuccessMessage"] = "Data imported successfully.";
-            return View("Index", addProducts);
+            return RedirectToAction("Index");
         }
 
         // Parse XML data from the stream
@@ -89,10 +120,10 @@ namespace Dimitris.ProductImport.Controllers
             {
                 var product = new AddProductModel
                 {
-                    ProductID = productElement.Element("ProductID")?.Value ?? productElement.Element("UniqueID")?.Value,
+                    Sku = productElement.Element("ProductID")?.Value ?? productElement.Element("UniqueID")?.Value,
                     Name = productElement.Element("Name")?.Value ?? productElement.Element("ProductName")?.Value,
-                    Description = productElement.Element("Description")?.Value,
-                    Stock = int.Parse(productElement.Element("Stock")?.Value),
+                    ShortDescription = productElement.Element("Description")?.Value,
+                    StockQuantity = int.Parse(productElement.Element("Stock")?.Value),
                     Price = ParsePrice(productElement.Element("Price")?.Value),
                     CategoryId = productElement.Element("CategoryId")?.Value ?? productElement.Element("Category")?.Value
                 };
@@ -121,12 +152,12 @@ namespace Dimitris.ProductImport.Controllers
                     {
                         var parsedProduct = new AddProductModel
                         {
-                            ProductID = product["ProductID"]?.ToString() ?? product["UniqueID"]?.ToString(),
+                            Sku = product["ProductID"]?.ToString() ?? product["UniqueID"]?.ToString(),
                             Name = product["Name"]?.ToString() ?? product["ProductName"]?.ToString(), 
-                            Description = product["Description"]?.ToString(),
-                            Stock = (int)product["Stock"],
+                            ShortDescription = product["Description"]?.ToString(),
+                            StockQuantity = (int)product["Stock"],
                             Price = ParsePrice(product["Price"]?.ToString()),
-                            CategoryId = product["CategoryId"]?.ToString() ?? product["Category"]?.ToString(),
+                            CategoryId = product["CategoryId"]?.ToString() ?? product["Category"]?.ToString() 
                         };
 
                         addProducts.Add(parsedProduct);
@@ -156,7 +187,7 @@ namespace Dimitris.ProductImport.Controllers
                             case "ProductID":
                             case "Product ID":
                             case "SKU":
-                                product.ProductID = csv[i];
+                                product.Sku = csv[i];
                                 break;
                             case "Name":
                             case "ProductName":
@@ -166,10 +197,10 @@ namespace Dimitris.ProductImport.Controllers
                                 product.Price = ParsePriceCSV(csv[i]);
                                 break;
                             case "Stock":
-                                product.Stock = int.Parse(csv[i]);
+                                product.StockQuantity = int.Parse(csv[i]);
                                 break;
                             case "Description":
-                                product.Description = csv[i];
+                                product.ShortDescription = csv[i];
                                 break;
                             case "CategoryId":
                             case "Category":
@@ -177,7 +208,7 @@ namespace Dimitris.ProductImport.Controllers
                                 break;
                             case "hasDownload":
                                 bool.TryParse(csv[i], out bool hasDownload);
-                                product.HasDownload = hasDownload;
+                                product.IsDownload = hasDownload;
                                 break;
                             case "PublishedOn":
                                 DateOnly.TryParse(csv[i], out DateOnly publishedOn);
@@ -217,6 +248,36 @@ namespace Dimitris.ProductImport.Controllers
 
             return price;
         }
+
+
+        // Add the rest of the products to the database
+        private async void AddNewProductsToDatabase(List<AddProductModel> newProducts)
+        {
+            foreach (var product in newProducts)
+            {
+                var newProductEntity = new Smartstore.Core.Catalog.Products.Product
+                {
+                    Sku = product.Sku,
+                    Name = product.Name,
+                    ShortDescription = product.ShortDescription,
+                    Price = product.Price,
+                    StockQuantity = product.StockQuantity,
+                    Published = true,
+                    TaxCategoryId = 1,
+                    
+                    // Add other properties as needed
+                };
+                
+               
+                //    var categoryFromDb = _smartDbContext.Categories.Where(x => x.Id == product.CategoryId).FirstOrDefault();
+                
+                //newProductEntity.ProductCategories.Add(new ProductCategory { Category = product.CategoryId });
+                _smartDbContext.Products.Add(newProductEntity);
+            }
+
+            _smartDbContext.SaveChanges();
+        }
+
 
         // GET: Retrieve product details by ID
         [HttpGet]

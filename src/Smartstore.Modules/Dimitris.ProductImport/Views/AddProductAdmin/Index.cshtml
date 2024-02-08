@@ -6,6 +6,8 @@
 
 <h1>Import Product Document</h1>
 
+
+
 <form asp-action="ImportData" method="post" enctype="multipart/form-data">
     <div class="form-group">
         <label for="file">Select File:</label>
@@ -36,13 +38,13 @@
                 <div class="card mb-4 shadow-sm">
                     <div class="card-body">
                         <h5 class="card-title">@product.Name</h5>
-                        <p class="card-text">@product.Description</p>
-                        <p class="card-text">@product.ProductID</p>
+                        <p class="card-text">@product.ShortDescription</p>
+                        <p class="card-text">@product.Sku</p>
                         <p class="card-text">Price: $@product.Price</p>
 
-                        @if (product.Stock.HasValue)
+                        @if (product.StockQuantity != null && product.StockQuantity > 0)
                         {
-                            <p class="card-text">Stock: @product.Stock</p>
+                            <p class="card-text">Stock: @product.StockQuantity</p>
                         }
                         @if (product.CategoryId != null)
                         {
@@ -50,7 +52,7 @@
                                 <p>Category: @product.CategoryId</p>
                             </div>
                         }
-                        @if (product.HasDownload == true)
+                        @if (product.IsDownload == true)
                         {
                             <p class="card-text">Download Status: <span class="badge badge-success">Available</span></p>
                         }
@@ -75,7 +77,19 @@ else
     <button type="submit" class="btn btn-primary">Get Product</button>
 </form>
 
-<script>
+
+<!---button for database submission-->
+<form asp-action="AddNewProducts" asp-controller="AddProductAdmin" method="post">
+    <!-- Serialize the list of products to JSON and include it as a hidden input field -->
+    <input type="hidden" name="newProductsJson" value="@Html.Raw(Json.Serialize(Model))" />
+
+    <button type="submit" class="btn btn-primary mt-3">Add Products to Database</button>
+</form>
+
+
+
+<script>  
+
     // Add click event listener to the button
     document.getElementById("getProductButton").addEventListener("click", function () {
         // Make an AJAX request to the GetProduct action method

@@ -9,15 +9,15 @@ namespace Dimitris.ProductImport.Models
 {
     public class AddProductModel
     {
-        public string ProductID { get; set; }
+        public string Sku { get; set; }
         public string Name { get; set; }
-        public string Description { get; set; }
-        public decimal? Price { get; set; }
-        public int? Stock { get; set; }
+        public string ShortDescription { get; set; }
+        public decimal Price { get; set; }
+        public int StockQuantity { get; set; }
         public string CategoryId { get; set; }
 
         public string Currency {  get; set; }
-        public bool HasDownload { get; set; }
+        public bool IsDownload { get; set; }
         
         public DateOnly PublishedOn { get; set; }
     }
