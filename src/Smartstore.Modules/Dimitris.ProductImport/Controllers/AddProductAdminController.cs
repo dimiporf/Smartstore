@@ -118,14 +118,20 @@ namespace Dimitris.ProductImport.Controllers
             // Iterate through each Product element in the XML document
             foreach (var productElement in xmlDoc.Descendants("Product"))
             {
+                //Fix for parsing the Currency element from "Price currency" attribute
+                var priceElement = productElement.Element("Price");
+                var currencyAttribute = priceElement?.Attribute("currency");
+
                 var product = new AddProductModel
                 {
                     Sku = productElement.Element("ProductID")?.Value ?? productElement.Element("UniqueID")?.Value,
                     Name = productElement.Element("Name")?.Value ?? productElement.Element("ProductName")?.Value,
                     ShortDescription = productElement.Element("Description")?.Value,
                     StockQuantity = int.Parse(productElement.Element("Stock")?.Value),
-                    Price = ParsePrice(productElement.Element("Price")?.Value),
-                    CategoryId = productElement.Element("CategoryId")?.Value ?? productElement.Element("Category")?.Value
+                    // Pass both price string and currency to ParsePrice method
+                    Price = ParsePrice(priceElement?.Value, currencyAttribute?.Value),
+                    CategoryId = productElement.Element("CategoryId")?.Value ?? productElement.Element("Category")?.Value,
+                    Currency = currencyAttribute?.Value ?? "USD" // Default to USD if currency attribute is not present
                 };
 
                 addProducts.Add(product);
@@ -156,7 +162,7 @@ namespace Dimitris.ProductImport.Controllers
                             Name = product["Name"]?.ToString() ?? product["ProductName"]?.ToString(),
                             ShortDescription = product["Description"]?.ToString(),
                             StockQuantity = (int)product["Stock"],
-                            Price = ParsePrice(product["Price"]?.ToString()),
+                            Price = ParsePrice(product["Price"]?.ToString(), product["Price"]?.ToString()),
                             CategoryId = product["CategoryId"]?.ToString() ?? product["Category"]?.ToString()
                         };
 
@@ -234,19 +240,63 @@ namespace Dimitris.ProductImport.Controllers
             return decimal.Parse(cleanedPrice, NumberStyles.Currency, CultureInfo.InvariantCulture);
         }
 
-        // Parse the price string to a decimal value
-        private decimal ParsePrice(string priceString)
+        // Parse the price string to a decimal value based on the specified currency
+        private decimal ParsePrice(string priceString, string currency )
         {
             decimal price = 0;
 
             if (!string.IsNullOrEmpty(priceString))
             {
+                // Detect the currency symbol replaced
+                string replacedCurrencySymbol = "";
+                if (priceString.Contains("$"))
+                {
+                    replacedCurrencySymbol = "$";
+                }
+                else if (priceString.Contains("€"))
+                {
+                    replacedCurrencySymbol = "€";
+                }
+                else if (priceString.Contains("£"))
+                {
+                    replacedCurrencySymbol = "£";
+                }
+                // Add more cases for other currency symbols if needed
+
+                // Remove the detected currency symbol from the price string
                 priceString = priceString.Replace("$", "").Replace("€", "").Replace("£", "").Replace("USD", "").Trim();
+
+                // Parse the price string to decimal
                 decimal.TryParse(priceString, NumberStyles.Currency, CultureInfo.InvariantCulture, out price);
+
+                // Convert price to USD if the currency is different
+                if (!string.IsNullOrEmpty(currency))
+                {
+                    switch (currency.ToUpper())
+                    {
+                        case "EUR":
+                        case "€":
+                            price *= 1.12m; // EUR to USD conversion rate
+                            break;
+                        case "GBP":
+                        case "£":
+                            price *= 1.34m; // GBP to USD conversion rate
+                            break;
+                        case "CHF":
+                            price *= 1.09m; // CHF to USD conversion rate
+                            break;
+                        // Add more cases for other currencies if needed
+                        default:
+                            // Default case if currency is not recognized
+                            Console.WriteLine($"Unknown currency: {currency}. Assuming USD.");
+                            break;
+                    }
+                }               
             }
 
             return price;
         }
+
 
 
         // Add new products to the database
