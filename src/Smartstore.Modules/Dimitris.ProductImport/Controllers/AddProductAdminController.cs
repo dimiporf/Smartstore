@@ -15,18 +15,16 @@ using Smartstore.Core.DataExchange.Csv;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Smartstore.Core.Catalog.Categories;
-using static Smartstore.Core.Security.Permissions.Catalog;
-using Org.BouncyCastle.Crypto.Signers;
 
 namespace Dimitris.ProductImport.Controllers
 {
+    // Controller for adding new products from various file formats
     public class AddProductAdminController : AdminController
     {
         private readonly SmartDbContext _smartDbContext;
         private List<AddProductModel> _newProducts;
 
-        
-
+        // Constructor injection of SmartDbContext
         public AddProductAdminController(SmartDbContext smartDbContext)
         {
             _smartDbContext = smartDbContext;
@@ -37,6 +35,7 @@ namespace Dimitris.ProductImport.Controllers
         [HttpGet]
         public IActionResult Index(string newProducts)
         {
+            // Deserialize newProducts JSON string if provided
             if (!string.IsNullOrEmpty(newProducts))
             {
                 _newProducts = JsonConvert.DeserializeObject<List<AddProductModel>>(newProducts);
@@ -154,11 +153,11 @@ namespace Dimitris.ProductImport.Controllers
                         var parsedProduct = new AddProductModel
                         {
                             Sku = product["ProductID"]?.ToString() ?? product["UniqueID"]?.ToString(),
-                            Name = product["Name"]?.ToString() ?? product["ProductName"]?.ToString(), 
+                            Name = product["Name"]?.ToString() ?? product["ProductName"]?.ToString(),
                             ShortDescription = product["Description"]?.ToString(),
                             StockQuantity = (int)product["Stock"],
                             Price = ParsePrice(product["Price"]?.ToString()),
-                            CategoryId = product["CategoryId"]?.ToString() ?? product["Category"]?.ToString() 
+                            CategoryId = product["CategoryId"]?.ToString() ?? product["Category"]?.ToString()
                         };
 
                         addProducts.Add(parsedProduct);
@@ -225,7 +224,7 @@ namespace Dimitris.ProductImport.Controllers
             return addProducts;
         }
 
-        // Parse the price field, handling different formats
+        // Parse the price field from CSV, handling different formats
         private decimal ParsePriceCSV(string price)
         {
             // Remove any non-numeric characters except for the decimal separator
@@ -234,7 +233,6 @@ namespace Dimitris.ProductImport.Controllers
             cleanedPrice = cleanedPrice.Replace(",", ".");
             return decimal.Parse(cleanedPrice, NumberStyles.Currency, CultureInfo.InvariantCulture);
         }
-
 
         // Parse the price string to a decimal value
         private decimal ParsePrice(string priceString)
@@ -251,7 +249,7 @@ namespace Dimitris.ProductImport.Controllers
         }
 
 
-        // Add the rest of the products to the database
+        // Add new products to the database
         private async void AddNewProductsToDatabase(List<AddProductModel> newProducts)
         {
             Random random = new Random();
@@ -267,16 +265,10 @@ namespace Dimitris.ProductImport.Controllers
                     StockQuantity = product.StockQuantity,
                     Published = true,
                     TaxCategoryId = random.Next(1, 6),
-                    ProductTypeId = 5                
-                    
-                    
+                    ProductTypeId = 5
                     // Add other properties as needed
                 };
-                
-               
-                //    var categoryFromDb = _smartDbContext.Categories.Where(x => x.Id == product.CategoryId).FirstOrDefault();
-                
-                //newProductEntity.ProductCategories.Add(new ProductCategory { Category = product.CategoryId });
+
                 _smartDbContext.Products.Add(newProductEntity);
             }
 
