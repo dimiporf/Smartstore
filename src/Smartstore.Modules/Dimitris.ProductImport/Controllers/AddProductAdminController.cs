@@ -129,9 +129,9 @@ namespace Dimitris.ProductImport.Controllers
                     ShortDescription = productElement.Element("Description")?.Value,
                     StockQuantity = int.Parse(productElement.Element("Stock")?.Value),
                     // Pass both price string and currency to ParsePrice method
-                    Price = ParsePrice(priceElement?.Value, currencyAttribute?.Value),
+                    Price = ParsePrice(priceElement?.Value, currencyAttribute?.Value.ToString()+priceElement?.Value.ToString()),
                     CategoryId = productElement.Element("CategoryId")?.Value ?? productElement.Element("Category")?.Value,
-                    Currency = currencyAttribute?.Value ?? "USD" // Default to USD if currency attribute is not present
+                    Currency = currencyAttribute?.Value
                 };
 
                 addProducts.Add(product);
@@ -244,22 +244,26 @@ namespace Dimitris.ProductImport.Controllers
         private decimal ParsePrice(string priceString, string currency )
         {
             decimal price = 0;
+           string replacedCurrencySymbol = "";
 
-            if (!string.IsNullOrEmpty(priceString))
+            if (!string.IsNullOrEmpty(currency))
             {
                 // Detect the currency symbol replaced
-                string replacedCurrencySymbol = "";
-                if (priceString.Contains("$"))
+                if (currency.Contains("$") || currency.Contains("USD"))
                 {
                     replacedCurrencySymbol = "$";
                 }
-                else if (priceString.Contains("€"))
+                else if (currency.Contains("€") || currency.Contains("EUR"))
                 {
                     replacedCurrencySymbol = "€";
                 }
-                else if (priceString.Contains("£"))
+                else if (currency.Contains("£") || currency.Contains("GBP"))
                 {
                     replacedCurrencySymbol = "£";
+                }
+                else if (currency.Contains("CHF"))
+                {
+                    replacedCurrencySymbol = "CHF";
                 }
                 // Add more cases for other currency symbols if needed
 
@@ -272,7 +276,7 @@ namespace Dimitris.ProductImport.Controllers
                 // Convert price to USD if the currency is different
                 if (!string.IsNullOrEmpty(currency))
                 {
-                    switch (currency.ToUpper())
+                    switch (replacedCurrencySymbol.ToUpper())
                     {
                         case "EUR":
                         case "€":
