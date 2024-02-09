@@ -280,16 +280,17 @@ namespace Dimitris.ProductImport.Controllers
                     {
                         case "EUR":
                         case "€":
-                            price *= 1.12m; // EUR to USD conversion rate
+                            price *= 1.08m; // EUR to USD conversion rate
                             break;
                         case "GBP":
                         case "£":
-                            price *= 1.34m; // GBP to USD conversion rate
+                            price *= 1.26m; // GBP to USD conversion rate
                             break;
                         case "CHF":
-                            price *= 1.09m; // CHF to USD conversion rate
+                            price *= 1.14m; // CHF to USD conversion rate
                             break;
                         // Add more cases for other currencies if needed
+                        //Future implemention involves API calls for dynamic currency conversion
                         default:
                             // Default case if currency is not recognized
                             Console.WriteLine($"Unknown currency: {currency}. Assuming USD.");
